@@ -5,7 +5,10 @@ import com.kotlinmockwebserver.server_rule.request.Post
 import com.kotlinmockwebserver.server_rule.request.Request
 import com.kotlinmockwebserver.server_rule.response.Response
 
-data class Rule(var request: Request, var response: Response) {
+class Rule() {
+
+    var request: Request? = null
+    var response: Response? = null
 
     fun get(url: String, init: Get.() -> Unit) {
         val request = Get(url)
@@ -24,5 +27,11 @@ data class Rule(var request: Request, var response: Response) {
         response.init()
         this.response = response
     }
+}
+
+fun rule(func: Rule.() -> Unit): Rule  {
+    val rule = Rule()
+    rule.func()
+    return rule
 }
 

@@ -2,6 +2,7 @@ package com.kotlinmockwebserver.example.di;
 
 import android.content.Context;
 
+import com.kotlinmockwebserver.example.app.HostSelectionInterceptor;
 import com.kotlinmockwebserver.example.di.modules.BusModule;
 import com.kotlinmockwebserver.example.di.modules.ContextModule;
 import com.kotlinmockwebserver.example.di.modules.GithubModule;
@@ -14,6 +15,8 @@ import com.squareup.otto.Bus;
 import javax.inject.Singleton;
 
 import dagger.Component;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 
 /**
  * Date: 8/18/2016
@@ -25,6 +28,8 @@ import dagger.Component;
 @Component(modules = {ContextModule.class, BusModule.class, GithubModule.class})
 public interface AppComponent {
 	Context getContext();
+	OkHttpClient okHtppClient();
+	HostSelectionInterceptor hostInterceptor();
 	GithubService getAuthService();
 	Bus getBus();
 

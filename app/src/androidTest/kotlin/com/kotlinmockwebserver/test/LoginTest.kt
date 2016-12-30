@@ -4,10 +4,17 @@ import android.app.Activity
 import android.support.test.InstrumentationRegistry
 import android.support.test.rule.ActivityTestRule
 import android.support.test.runner.AndroidJUnit4
+import com.kotlinmockwebserver.example.app.GithubApp
+import com.kotlinmockwebserver.example.di.DaggerAppComponent
+import com.kotlinmockwebserver.example.di.modules.*
 import com.kotlinmockwebserver.example.ui.activities.SignInActivity
 import com.kotlinmockwebserver.screen.loginScreen
 import com.kotlinmockwebserver.server_rule.MockWebServerRule
 import com.kotlinmockwebserver.server_rule.OnlinerMockWebServerRule
+import com.kotlinmockwebserver.server_rule.interceptor.HostSelectionInterceptor
+import com.kotlinmockwebserver.server_rule.rule
+import okhttp3.Interceptor
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -27,7 +34,9 @@ class LoginTest {
 
     @Test
     fun loginSuccessfull() {
+
         loginScreen {
+
             login("ultimate3939@gmail.com")
             password("androidjavaforever")
             pressLogin()
@@ -36,6 +45,16 @@ class LoginTest {
                 showingProgress()
             }
         }
+    }
+
+    fun loginSucess(): com.kotlinmockwebserver.server_rule.Rule {
+
+        val rule = rule {
+            get("/") {
+            }
+        }
+
+        return rule
     }
 
     fun loginScreen(): ActivityTestRule<SignInActivity> {

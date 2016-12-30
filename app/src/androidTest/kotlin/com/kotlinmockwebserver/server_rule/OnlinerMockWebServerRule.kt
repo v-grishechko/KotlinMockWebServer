@@ -1,15 +1,21 @@
 package com.kotlinmockwebserver.server_rule
 
+import android.support.test.InstrumentationRegistry
 import com.kotlinmockwebserver.example.app.GithubApp
-import com.kotlinmockwebserver.example.di.AppComponent
 import com.kotlinmockwebserver.example.di.DaggerAppComponent
+import com.kotlinmockwebserver.example.di.modules.ContextModule
+import com.kotlinmockwebserver.example.di.modules.RetrofitModule
+import com.kotlinmockwebserver.server_rule.interceptor.HostSelectionInterceptor
 import okhttp3.HttpUrl
+import okhttp3.Interceptor
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
-import okio.Buffer
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import rx.Observable
+import rx.subjects.BehaviorSubject
+import rx.subjects.SerializedSubject
 import java.util.*
 
 class OnlinerMockWebServerRule : MockWebServerRule {
@@ -20,14 +26,16 @@ class OnlinerMockWebServerRule : MockWebServerRule {
 
     var isServerStarted: Boolean = false
 
+    var stopEvents = SerializedSubject(BehaviorSubject.create<Unit>())
+
+    var startEvents = SerializedSubject(BehaviorSubject.create<Unit>())
+
     override fun apply(base: Statement?, description: Description?): Statement {
         return object : Statement() {
             override fun evaluate() {
                 start()
 
-                GithubApp.setAppComponent(object : TestComponent() {
-
-                })
+                GithubApp.getAppComponent().hostInterceptor().setHost(url())
 
                 server.setDispatcher(dispatcher())
 
@@ -47,10 +55,15 @@ class OnlinerMockWebServerRule : MockWebServerRule {
 
         try {
             server.start()
+            startEvents.onNext(Unit)
             isServerStarted = true
         } catch (e: Exception) {
             print(e)
         }
+    }
+
+    override fun started(): Observable<Unit> {
+         return startEvents
     }
 
     override fun stop() {
@@ -60,10 +73,15 @@ class OnlinerMockWebServerRule : MockWebServerRule {
 
         try {
             server.shutdown()
+            stopEvents.onNext(Unit)
             isServerStarted = false
         } catch (e: Exception) {
             print(e)
         }
+    }
+
+    override fun stopped(): Observable<Unit> {
+        return stopEvents
     }
 
     override fun addRule(rule: Rule) {
@@ -75,7 +93,7 @@ class OnlinerMockWebServerRule : MockWebServerRule {
     }
 
     override fun url(): HttpUrl {
-       return server.url("")
+        return server.url("")
     }
 
     fun dispatcher(): Dispatcher {
@@ -102,5 +120,4 @@ class OnlinerMockWebServerRule : MockWebServerRule {
     fun response404(): MockResponse {
         return MockResponse().setResponseCode(404)
     }
-
 }
