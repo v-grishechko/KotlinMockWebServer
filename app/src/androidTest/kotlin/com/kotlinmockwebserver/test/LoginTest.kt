@@ -12,7 +12,9 @@ import com.kotlinmockwebserver.screen.loginScreen
 import com.kotlinmockwebserver.server_rule.MockWebServerRule
 import com.kotlinmockwebserver.server_rule.OnlinerMockWebServerRule
 import com.kotlinmockwebserver.server_rule.interceptor.HostSelectionInterceptor
+import com.kotlinmockwebserver.server_rule.request.Header
 import com.kotlinmockwebserver.server_rule.rule
+import com.kotlinmockwebserver.utils.ResponseUtils
 import okhttp3.Interceptor
 import org.junit.Before
 import org.junit.Rule
@@ -34,6 +36,7 @@ class LoginTest {
 
     @Test
     fun loginSuccessfull() {
+        server.addRule(loginSucess())
 
         loginScreen {
 
@@ -50,7 +53,13 @@ class LoginTest {
     fun loginSucess(): com.kotlinmockwebserver.server_rule.Rule {
 
         val rule = rule {
-            get("/") {
+            get("/user") {
+
+                response {
+                    code = 200
+                    body = ResponseUtils.getFileAsString("login_sucess_response.json")
+                    headers(Header("OkHttp", "Ok"))
+                }
             }
         }
 

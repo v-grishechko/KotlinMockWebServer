@@ -63,7 +63,7 @@ class OnlinerMockWebServerRule : MockWebServerRule {
     }
 
     override fun started(): Observable<Unit> {
-         return startEvents
+        return startEvents
     }
 
     override fun stop() {
@@ -99,16 +99,18 @@ class OnlinerMockWebServerRule : MockWebServerRule {
     fun dispatcher(): Dispatcher {
         return object : Dispatcher() {
             override fun dispatch(request: RecordedRequest?): MockResponse {
-                val rule = rules.firstOrNull { it.request.path.equals(request?.path, true) } ?: return response404()
+                val rule = rules.firstOrNull { it.request?.path.equals(request?.path, true) } ?: return response404()
 
                 val mockedResponse = MockResponse()
 
-                for (header in rule.response.headers) {
-                    mockedResponse.addHeader(header.name, header.value)
-                }
+                if (rule.response != null) {
+                    for ((name, value) in rule.response!!.headers) {
+                        mockedResponse.addHeader(name, value)
+                    }
 
-                mockedResponse.setBody(rule.response.body)
-                mockedResponse.setResponseCode(rule.response.code)
+                    mockedResponse.setBody(rule.response!!.body)
+                    mockedResponse.setResponseCode(rule.response!!.code)
+                }
 
                 rules.remove(rule)
 
